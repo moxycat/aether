@@ -14,4 +14,10 @@ String mDesc;
 void mAttack(){
 }
 
+void mGenName(){
+}
+
+void mGenDesc(){
+}
+
 #endif
