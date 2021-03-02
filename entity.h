@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "util.h"
+#include "map.h"
 
 typedef struct _player_state {
     int32_t hp;
@@ -20,6 +21,11 @@ typedef struct _enemy_state {
 uint32_t player_attack(player_state_t *pst, enemy_state_t *est);
 /* reduces the dmg multiplier of the enemy for 1 turn */
 void player_defend(player_state_t *pst, enemy_state_t *est);
+
+void player_move_up(map_t *map);
+void player_move_down(map_t *map);
+void player_move_right(map_t *map);
+void player_move_left(map_t *map);
 
 
 /* enemy functionality*/
