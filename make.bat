@@ -1,0 +1,1 @@
+g++ -static-libgcc -O2 -o main.exe *.cpp
