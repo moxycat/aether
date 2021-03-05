@@ -1,8 +1,6 @@
 all:
-	gcc -static-libgcc -O2 -o bin/lsrpg.exe *.c
-	strip --strip-all bin/lsrpg.exe
+	gcc -static-libgcc -O2 -Wall -o game.exe *.c
+	strip --strip-all game.exe
 
 clean:
-	del bin/lsrpg.exe
-
-.PHONY: clean
+	del game.exe
