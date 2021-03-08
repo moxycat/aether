@@ -7,15 +7,24 @@
 #include "const.h"
 #include "util.h"
 
+typedef struct _entity {
+    int hp;
+    int dmg;
+    int x;
+    int y;
+} entity_t;
+
 /*
     contains info about the world, i.e. the map, player position
     depth should be added at some point as well
 */
 typedef struct _world {
     char map[ROWS][COLS];
-    int player_x;
-    int player_y;
+    entity_t *player;
+    entity_t **enemies;
     int depth;
+    int exit_x;
+    int exit_y;
 } world_t;
 
 /*
@@ -39,5 +48,9 @@ void map_step(char map[ROWS][COLS]);
 
 /* applies map_step n times */
 void map_iter(char map[ROWS][COLS], int n);
+
+void map_add_exit(world_t *w);
+
+void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y);
 
 #endif

@@ -1,7 +1,8 @@
 #ifndef _CONST_H_
 #define _CONST_H_
 
-#define ROWS 34
+/* these define the map dimensions not the console itself */
+#define ROWS 34 /* one less because of the status bar at the top */
 #define COLS 98
 
 #define INITIAL_PROBABILITY 45
@@ -9,8 +10,10 @@
 #define BECOME_WALL_LIMIT 5
 
 #define WALL '#'
+#define PB_WALL '%'
 #define FLOOR '.'
 #define PLAYER '@'
-#define CHEST 'T'
+#define ENEMY 'I'
+#define EXIT '>'
 
 #endif

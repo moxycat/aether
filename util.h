@@ -12,12 +12,4 @@ inline int rand_int(int min, int max) {
     return (rand() % (max - min + 1)) + min;
 }
 
-static char *concat(char *str1, char *str2) {
-    char *output = (char*)malloc(strlen(str1) + strlen(str2) + 1);
-    strcpy(output, str1);
-    strcat(output, str2);
-    return output;
-}
-
-
 #endif

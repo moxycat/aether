@@ -2,35 +2,39 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <conio.h>
 #include <Windows.h>
 
 #include "mapgen.h"
 #include "player.h"
+#include "global.h"
 #include "util.h"
 
-/*
-    prints a string at a given coordinate in the console
-    (unused)
-*/
+char *concat(char *str1, char *str2) {
+    char *output = (char*)malloc(strlen(str1) + strlen(str2) + 1);
+    strcpy(output, str1);
+    strcat(output, str2);
+    return output;
+}
+
 void print_at(HANDLE con, int x, int y, char c) {
     DWORD written;
     SetConsoleCursorPosition(con, (COORD){x, y});
     WriteConsoleOutputCharacterA(con, c, 1, (COORD){x, y}, &written);
 }
 
-/*
-    clears the console buffer
-    (unused)
-*/
+void console_cursor_hide(HANDLE con) {
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(con, &info);
+}
+
 void console_clear() {
     DWORD written;
     WriteConsoleOutputCharacterA(GetStdHandle(STD_OUTPUT_HANDLE), " ", COLS * ROWS, (COORD){0, 0}, &written);
 }
 
-/*
-    sets the console's window's size
-    (in pixels, not characters)
-*/
 void console_set_size(int width, int height) {
     HWND window = GetConsoleWindow();
     RECT rect;
@@ -38,77 +42,103 @@ void console_set_size(int width, int height) {
     MoveWindow(window, rect.left, rect.top, width, height, TRUE);
 }
 
-/*
-    writes the map array directly to the console buffer
-*/
-void print_map(HANDLE con, char map[ROWS][COLS]) {
+char fov_map[ROWS][COLS];
+int cheat = 0;
+void draw(HANDLE con, world_t *w) {
     DWORD written;
-    char *status = "HP: 100/100 ";
-    char *ws = (char*)malloc(COLS - strlen(status) + 1);
-    for (int i = 0; i < COLS - strlen(status); ++i) {
-        ws[i] = '=';
+    char status[COLS + 1];
+    char *frame;
+    if (cheat > 0) sprintf(status, "HP: %d/%d | DMG: %d | LVL: %d | POS: %d %d | EXIT: %d %d ",
+        w->player->hp, player_max_hp, w->player->dmg, w->depth, w->player->x, w->player->y, w->exit_x, w->exit_y);
+    else sprintf(status, "HP: %d/%d | DMG: %d | LVL: %d ", w->player->hp, player_max_hp, w->player->dmg, w->depth);
+    for (int i = strlen(status); i < COLS + 1; ++i) {
+        status[i] = '=';
     }
-    ws[COLS - strlen(status)] = '\0';
-    status = concat(status, ws);
-    status = concat(status, map);
-    WriteConsoleOutputCharacterA(con, status, (ROWS + 1) * COLS, (COORD){0, 0}, &written);
+    status[COLS] = '\0';
+    if (cheat != 2) {
+        apply_fov(w, fov_map, 5, 3);
+        frame = concat(status, fov_map);
+    }
+    else frame = concat(status, w->map);
+    WriteConsoleOutputCharacterA(con, frame, (ROWS + 1) * COLS, (COORD){0, 0}, &written);
 }
 
-/*
-    the main function, of course
-*/
-int main(int argc, char **argv) {
-    /* setting up the console */
-    /* create a console buffer */
-    HANDLE con = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-    /* assign said console buffer to our console */
-    SetConsoleActiveScreenBuffer(con);
-    /* set the window size to 800x600 */
-    console_set_size(800, 600);
-    /* seed the prng */
-    srand(0); /* 0 for testing only */
-
-    /* allocate memory for a world structure */
-    world_t *w = (world_t*)malloc(sizeof(world_t));
-
-    /* initialise the map within the world we just allocated */
+void make_map(world_t *w) {
     map_init(w->map);
-    /* iterate the map a bit so as to smooth it out */
     map_iter(w->map, 4);
-    /* spawn the player */
-    spawn_player(w, 23, 5);
-    /*
-        since the graphics update only when a recognised key is pressed
-        print the map once before anything has happend
-    */
-    print_map(con, w->map);
+    spawn_player(w);
+    map_add_exit(w);
+}
 
-    /*
-        the game loop
-        random encounters will be handled here as well
-    */
+int main(int argc, char **argv) {
+    HANDLE con = CreateConsoleScreenBuffer(
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+        CONSOLE_TEXTMODE_BUFFER, NULL);
+    SetConsoleActiveScreenBuffer(con);
+    SetConsoleTitleA("Aether Realm");
+    console_set_size(800, 600);
+    console_cursor_hide(con);
+    srand(time(0)); /* 0 for testing only */
+
+    world_t *w = (world_t*)malloc(sizeof(world_t));
+    w->player = (entity_t*)malloc(sizeof(entity_t));
+    w->enemies = (entity_t**)malloc(sizeof(entity_t) * 3);
+
+    int current_level = 1;
+    int key = 0x0;
+    int last_dir = 0x44;
+    
+    w->depth = current_level;
+    w->player->hp = player_max_hp;
+    w->player->dmg = player_init_dmg;
+
+    make_map(w);
+
+    draw(con, w);
     while (1) {
-        /* check is w is pressed */
+        key = getch();
+
+        /* level change */
+        if (w->depth != current_level) {
+            current_level++;
+            make_map(w);
+            draw(con, w);
+        }
         if ((GetAsyncKeyState(0x57) & 0x8000) != 0) {
             move_up(w);
-            print_map(con, w->map);
+            draw(con, w);
+            last_dir = 0x57;
         }
-        /* check if s is pressed */
         else if ((GetAsyncKeyState(0x53) & 0x8000) != 0) {
             move_down(w);
-            print_map(con, w->map);
+            draw(con, w);
+            last_dir = 0x53;
         }
-        /* check if a is pressed */
         else if ((GetAsyncKeyState(0x41) & 0x8000) != 0) {
             move_left(w);
-            print_map(con, w->map);
+            draw(con, w);
+            last_dir = 0x41;
         }
-        /* check if d is pressed */
         else if ((GetAsyncKeyState(0x44) & 0x8000) != 0) {
             move_right(w);
-            print_map(con, w->map);
+            draw(con, w);
+            last_dir = 0x44;
         }
-        /* wait 50 ms so as to not overload the cpu */
+        /* break wall */
+        else if ((GetAsyncKeyState(0x51) & 0x8000) != 0) {
+            break_wall(w, last_dir);
+            draw(con, w);
+        }
+        /* attack */
+        else if ((GetAsyncKeyState(0x45) & 0x8000) != 0) {
+
+        }
+        /* i literally cannot pass a single level of this game */
+        else if ((GetAsyncKeyState(VK_OEM_3) & 0x8000) != 0) {
+            cheat++;
+            cheat %= 3;
+        }
         Sleep(50);
     }
 }
