@@ -1,14 +1,21 @@
 #include "entity.hpp"
 #include "util.hpp"
+#include "const.hpp"
+
+int enemy_dmg_fin(enemy_state_t *est){
+	return est -> dmg_base + rand() % est -> dmg_vary;
+}
 
 void enemy_attack(player_state_t *pst, enemy_state_t *est){
-	est -> dmg_fin = est -> dmg_base; 
+	int dmg_fin = enemy_dmg_fin(est); 
 		
 	if(pst -> defending == true){
-		est -> dmg_fin /= 2;
+		dmg_fin /= 2;
 		pst -> defending = false;
 	}
 
-	est -> dmg_fin -= pst -> defence;		
-	pst -> hp_curr -= est -> dmg_fin;	
+	dmg_fin -= pst -> defence;		
+	pst -> hp_curr -= dmg_fin;	
+
+	cout << "the monster attacks you for " << dmg_fin << " damage. oof\n\n";
 }

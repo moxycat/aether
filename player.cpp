@@ -1,10 +1,16 @@
 #include "entity.hpp"
+#include "const.hpp"
 #include "util.hpp"
 
-void player_attack(player_state_t *pst, enemy_state_t *est){
+int player_dmg_fin(player_state_t *pst){
+	return pst -> dmg_base + rand() % pst -> dmg_vary;
+}
 
-	pst -> dmg_fin = pst -> dmg_base * (1 + (rand() % 21) / 100);
-	est -> hp_curr -= pst -> dmg_fin;
+void player_attack(player_state_t *pst, enemy_state_t *est){
+	int dmg_fin = player_dmg_fin(pst);
+	est -> hp_curr -= dmg_fin;
+
+	cout << "you attacked for " << dmg_fin << " damage\n\n";
 }
 
 

@@ -1,7 +1,11 @@
 #ifndef _BATTLE_HPP_
 #define _BATTLE_HPP_
+#include <conio.h>
 #include "util.hpp"
 #include "entity.hpp"
+#include "const.hpp"
+
+static char choice;
 
 void battle(player_state_t *pst, enemy_state_t *est);
 

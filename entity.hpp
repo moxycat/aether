@@ -4,33 +4,23 @@
 #include <stdio.h>
 #include <iostream>
 #include "util.hpp"
+#include "const.hpp"
 using namespace std;
 
 typedef struct _player_state {
     int hp_curr;
-    int hp_max;
-    int dmg_base;
-    double dmg_fin_float;
-    int dmg_fin; /*the damage an enemy will take after all random modifiers/bonuses*/
+    int dmg_base; /*the damage an enemy will take after all random modifiers/bonuses*/
     int defence;
-    //int xp_curr;
-    //int xp_needed;
-    //int xp_excess;	
-    int lvl;
-    int choice;
+    int dmg_vary;
     bool defending; /* the player will take reduced damage if this is true */
     bool escape = false;
-    string name;
 } player_state_t;
 
 typedef struct _enemy_state {
     int hp_curr;
-    int hp_max;
     int dmg_base;
-    double dmg_fin_float;
-    int dmg_fin;
-    string name;
-    string desc;
+    int dmg_vary;
+    int defence;
 } enemy_state_t;
 
 /* player functionality */
@@ -38,10 +28,14 @@ typedef struct _enemy_state {
 /* deals dmg to enemy */
 void player_attack(player_state_t *pst, enemy_state_t *est);
 
+int player_dmg_fin(player_state_t *pst); //calculates the damage that enemies will take
+
 /* enemy functionality */
 
 /* generates an enemy */
-enemy_state_t enemy_generate(player_state_t *pst);
+enemy_state_t enemy_generate();
+
+int enemy_dmg_fin(enemy_state_t *pst);
 
 /* deals dmg to player */
 void enemy_attack(player_state_t *pst, enemy_state_t *est);
