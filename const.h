@@ -5,6 +5,9 @@
 #define ROWS 34 /* one less because of the status bar at the top */
 #define COLS 98
 
+#define CONSOLE_ROWS 35
+#define CONSOLE_COLS 98
+
 #define INITIAL_PROBABILITY 45
 #define STAY_WALL_LIMIT 4
 #define BECOME_WALL_LIMIT 5
@@ -13,7 +16,8 @@
 #define PB_WALL '%'
 #define FLOOR '.'
 #define PLAYER '@'
-#define ENEMY 'I'
+#define ENEMY 'X'
 #define EXIT '>'
+#define COIN 'o'
 
 #endif

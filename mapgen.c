@@ -34,7 +34,6 @@ void map_step(char map[ROWS][COLS]) {
             n = map_tile_neighbours(map, x, y);
             if (map[y][x] == WALL) {
                 if (n >= STAY_WALL_LIMIT) newmap[y][x] = WALL;
-                //if (n <= 3) newmap[y][x] = PB_WALL; /* TEST ONLY */
                 else newmap[y][x] = FLOOR;
             }
             else {
@@ -75,6 +74,28 @@ void map_add_exit(world_t *w) {
             }
         }
     } while ((w->exit_x == -1) && (w->exit_y == -1));
+}
+
+void map_add_coins(world_t *w) {
+    int n;
+    for (int y = 0; y < ROWS; ++y) {
+        for (int x = 0; x < COLS; ++x) {
+            n = map_tile_neighbours(w->map, x, y);
+            if ((n <= 3) && (1 >= rand_int(1, 100))) w->map[y][x] = COIN;
+        }
+    }
+}
+
+void map_add_enemies(world_t *w) {
+    int x = 0;
+    int y = 0;
+    for (int i = 0; i < w->enemy_count; ++i) {
+        do {
+            x = rand_int(0, COLS - 1);
+            y = rand_int(0, ROWS - 1);
+        } while (w->map[y][x] == WALL);
+        w->map[y][x] = ENEMY;
+    }
 }
 
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y) {

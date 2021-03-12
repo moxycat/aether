@@ -5,13 +5,20 @@
 #include <stdlib.h>
 
 #include "const.h"
+#include "inv.h"
 #include "util.h"
+
+#define STATUS_ROAM 0
+#define STATUS_INFIGHT 1
+#define STATUS_INMENU 2
 
 typedef struct _entity {
     int hp;
     int dmg;
+    int coins;
     int x;
     int y;
+    //inventory_t *inv;
 } entity_t;
 
 /*
@@ -21,10 +28,11 @@ typedef struct _entity {
 typedef struct _world {
     char map[ROWS][COLS];
     entity_t *player;
-    entity_t **enemies;
+    int enemy_count;
     int depth;
     int exit_x;
     int exit_y;
+    int status;
 } world_t;
 
 /*
@@ -50,6 +58,10 @@ void map_step(char map[ROWS][COLS]);
 void map_iter(char map[ROWS][COLS], int n);
 
 void map_add_exit(world_t *w);
+
+void map_add_coins(world_t *w);
+
+void map_add_enemies(world_t *w);
 
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y);
 
