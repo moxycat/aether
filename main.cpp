@@ -16,9 +16,9 @@ int main(){
 	pst.dmg_base = 100;
 	pst.dmg_vary = 10;
 	pst.defence = 20;
-	player_name = "a";
-	enemy_name = "monster";
-	enemy_desc = "im not a front end programmer idk";
+	player_name = "Disciple";
+	enemy_name = "Zombie";
+	enemy_desc = "A rotten human, rid of soul and mind, it's only feeling - hunger.";
 	enemy_hp_max = 400;
 	est.hp_curr = 400;
 	est.dmg_base = 70;
