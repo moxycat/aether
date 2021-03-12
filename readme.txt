@@ -5,4 +5,4 @@ The game depends on the Windows API for the graphics so it's not able to run on 
 Tested with:
 - gcc version 8.2.0 (MinGW.org GCC-8.2.0-5)
 - ...
-To compile the game run make or just compile all of the .c files into one.
+To compile the game run make in it's folder.
