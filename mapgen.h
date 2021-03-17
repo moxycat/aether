@@ -16,6 +16,11 @@ typedef struct _entity {
     int hp;
     int dmg;
     int coins;
+    int armour;
+    int max_hp;
+    int escaped;
+    int dmg_vary;
+    int defending;
     int x;
     int y;
     //inventory_t *inv;

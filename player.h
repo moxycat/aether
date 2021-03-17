@@ -19,4 +19,6 @@ void break_wall(world_t *w, int dir);
 /* fight an enemy in the world */
 void fight_enemy(world_t *w);
 
+int player_attack(entity_t *player, entity_t *enemy);
+
 #endif

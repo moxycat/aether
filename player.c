@@ -136,3 +136,11 @@ void break_wall(world_t *w, int dir) {
 void fight_enemy(world_t *w) {
     w->status = STATUS_INFIGHT;
 }
+
+int player_attack(entity_t *player, entity_t *enemy){
+    int dmg_final = player -> dmg + rand() % player -> dmg_vary;
+    enemy -> hp -= dmg_final;
+
+    return dmg_final;    
+}
+

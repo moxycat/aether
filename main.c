@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
     w->depth = current_level;
     w->player->hp = player_max_hp;
     w->player->dmg = player_init_dmg;
+    w -> player -> dmg_vary = player_init_dmg_vary;
     w->player->coins = 0;
 
     make_map(w);
