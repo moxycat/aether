@@ -3,24 +3,38 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <conio.h>
 #include <Windows.h>
 
 #include "mapgen.h"
 #include "util.h"
 #include "const.h"
 
-typedef struct _item {
-    char *name;
-    int quantity;
-} item_t;
+/* items defined in the game */
+
+
+#define ITEM_HEAL_POTION 0
+#define ITEM_TORCH 1
+#define ITEM_APPLE 2
+
+static char *item_names[] = {
+    "Potion of healing",
+    "Potion of strength",
+    "Potion of defense",
+    "Potion of vision",
+    "Apple"
+};
+#define ITEM_COUNT sizeof(item_names) / sizeof(char*)
 
 typedef struct _inventory {
-    item_t a;
-    item_t b;
-    item_t c;
+    int inv[ITEM_COUNT];
+    int equipped;
+    int size;
 } inventory_t;
 
 /* draws the inventory over the current frame */
-void inventory_draw(inventory_t *inv);
+void inventory_draw(HANDLE con, inventory_t *inv);
+void inventory_calc_size(inventory_t *inv);
 
 #endif

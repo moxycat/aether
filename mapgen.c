@@ -98,6 +98,17 @@ void map_add_enemies(world_t *w) {
     }
 }
 
+void map_add_chest(world_t *w) {
+    int n;
+    for (int y = 0; y < ROWS; ++y) {
+        for (int x = 0; x < COLS; ++x) {
+            n = map_tile_neighbours(w->map, x, y);
+            if ((n >= 5) && (1 >= rand_int(1, 100))) w->map[y][x] = CHEST;
+            return;
+        }
+    }
+}
+
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y) {
     int py = w->player->y;
     int px = w->player->x;

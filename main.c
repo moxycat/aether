@@ -10,7 +10,8 @@
 #include "battle.h"
 #include "global.h"
 #include "util.h"
-#include "graphics.h"
+#include "inv.h"
+//#include "graphics.h"
 
 char fov_map[ROWS][COLS];
 int cheat = 0;
@@ -33,20 +34,12 @@ void console_cursor_hide(HANDLE con) {
    SetConsoleCursorInfo(con, &info);
 }
 
-void console_clear(HANDLE console) {
-    COORD topLeft  = { 0, 0 };
+void console_clear(HANDLE con) {
     CONSOLE_SCREEN_BUFFER_INFO screen;
     DWORD written;
-
-    GetConsoleScreenBufferInfo(console, &screen);
-    FillConsoleOutputCharacterA(
-        console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written
-    );
-    FillConsoleOutputAttribute(
-        console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
-        screen.dwSize.X * screen.dwSize.Y, topLeft, &written
-    );
-    SetConsoleCursorPosition(console, topLeft);
+    GetConsoleScreenBufferInfo(con, &screen);
+    FillConsoleOutputCharacterA(con, ' ', screen.dwSize.X * screen.dwSize.Y, (COORD){0, 0}, &written);
+    SetConsoleCursorPosition(con, (COORD){0, 0});
 }
 
 void console_set_size(int width, int height) {
@@ -54,6 +47,51 @@ void console_set_size(int width, int height) {
     RECT rect;
     GetWindowRect(window, &rect);
     MoveWindow(window, rect.left, rect.top, width, height, TRUE);
+}
+
+int display_dialogue_box(HANDLE con, char *text, char **opts, int nopts) {
+    int len = 0, cur_len = 0, max_len = 0;
+    int selected = 0;
+    DWORD written;
+    CONSOLE_SCREEN_BUFFER_INFO screen;
+    char *buffer = (char*)malloc(CONSOLE_COLS * nopts);
+    SetConsoleCursorPosition(con, (COORD){0, 1});
+    WriteConsoleA(con, text, strlen(text), &written, NULL);
+    GetConsoleScreenBufferInfo(con, &screen);
+    max_len = strlen(text);
+    for (int i = 0; i < nopts; ++i) {
+        len += sprintf(buffer + len, " %s\n", opts[i]);
+        cur_len = snprintf(NULL, 0, " %s\n", opts[i]);
+        if (cur_len > max_len) max_len = cur_len;
+    }
+    for (int i = 1; i < nopts + screen.dwCursorPosition.Y; ++i) {
+        FillConsoleOutputCharacterA(con, ' ', max_len, (COORD){0, i}, &written);
+    }
+    SetConsoleCursorPosition(con, (COORD){0, 1});
+    WriteConsoleA(con, text, strlen(text), &written, NULL);
+    WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
+    
+
+    FillConsoleOutputCharacterA(con, '-', max_len, (COORD){0, nopts + screen.dwCursorPosition.Y}, &written);
+    for (int i = 1; i <= nopts + screen.dwCursorPosition.Y; ++i) FillConsoleOutputCharacterA(con, '|', 1, (COORD){max_len, i}, &written);
+    FillConsoleOutputCharacterA(con, '+', 1, (COORD){max_len, nopts + screen.dwCursorPosition.Y}, &written);
+
+    FillConsoleOutputCharacterA(con, '>', 1, (COORD){0, screen.dwCursorPosition.Y}, &written);
+    while (1) {
+        getch();
+        FillConsoleOutputCharacterA(con, ' ', 1, (COORD){0, selected + screen.dwCursorPosition.Y}, &written);
+
+        if ((GetAsyncKeyState(0x57) & 0x8000) != 0) selected--;
+        else if ((GetAsyncKeyState(0x53) & 0x8000) != 0) selected++;
+        else if ((GetAsyncKeyState(0x45) & 0x8000) != 0) break;
+
+        if (selected < 0) selected = 0;
+        if (selected > nopts - 1) selected = nopts - 1;
+        FillConsoleOutputCharacterA(con, '>', 1, (COORD){0, selected + screen.dwCursorPosition.Y}, &written);
+    }
+
+    free(buffer);
+    return selected;
 }
 
 void draw(HANDLE con, world_t *w) {
@@ -97,36 +135,62 @@ int main(int argc, char **argv) {
     console_cursor_hide(con);
     srand(time(0)); /* 0 for testing only */
 
-    world_t *w = (world_t*)malloc(sizeof(world_t));
-
     int current_level = 1;
     int key = 0x0;
     int last_dir = 0x44;
     int last_status = STATUS_ROAM;
 
+    /* add the main menu here */
+    DWORD written;
+    for (int i = 0; i < 26; ++i) {
+        WriteConsoleA(con, main_menu_text[i], strlen(main_menu_text[i]), &written, NULL);
+    }
+    int proceed = 0;
+    do {
+        key = getch();
+        switch (key) {
+            case '1': proceed = 1; break;
+            case '2': exit(0); break;
+            default: break;
+        }
+    } while(!proceed);
+
+    world_t *w = (world_t*)malloc(sizeof(world_t));
+
     //w->enemy_count = enemies(current_level);
 
     w->enemy_count = enemies(current_level);
     w->player = (entity_t*)malloc(sizeof(entity_t));
-    
+    w->player->inv = (inventory_t*)malloc(sizeof(inventory_t));
+
     w->depth = current_level;
     w->player->hp = player_max_hp;
     w->player->dmg = player_init_dmg;
-    w -> player -> dmg_vary = player_init_dmg_vary;
+    w->player->dmg_vary = player_init_dmg_vary;
     w->player->coins = 0;
+
+    w->player->inv->equipped = -1;
+    w->player->inv->inv[0] = 2;
+    w->player->inv->inv[1] = 0;
+    w->player->inv->inv[2] = 5;
+    w->player->inv->inv[3] = 0;
+    w->player->inv->inv[4] = 1;
 
     make_map(w);
 
     draw(con, w);
-    while (key != '\\') {
+    while (1) {
         /* clear the console on status change */
         if (last_status != w->status) {
-            console_clear(con);
+            if (w->status != STATUS_INMENU) console_clear(con);
             last_status = w->status;
         }
 
         if (w->status == STATUS_ROAM) {
             if (w->depth != current_level) {
+                display_dialogue_box(con, "Do you wish to return to town or\nproceed further down?\n", (char *[]){"Return to town", "Proceed further down"}, 2);
+
+
                 current_level++;
                 w->enemy_count = enemies(current_level);
                 make_map(w);
@@ -177,6 +241,9 @@ int main(int argc, char **argv) {
         }
         else if (w->status == STATUS_INFIGHT) {
             battle(con, w->player);
+            if (w->player->hp <= 0) {
+                return - 1;
+            }
             /* use last_dir to remove the enemy from the map 
             kinda hacky solution */
             switch (last_dir) {
@@ -189,9 +256,8 @@ int main(int argc, char **argv) {
             w->status = STATUS_ROAM;
         }
         else if (w->status == STATUS_INMENU) {
-            while (w->status == STATUS_INMENU) {
-                
-            }
+            inventory_draw(con, w->player->inv);
+            w->status = STATUS_ROAM;
         }
         Sleep(50);
     }
