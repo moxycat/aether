@@ -20,6 +20,7 @@
 #define EXIT '>'
 #define COIN 'o'
 #define CHEST '?'
+#define ORE '*'
 
 static char* main_menu_text[26] = {
   "\n                             ____   _             _         _ \n",

@@ -13,28 +13,38 @@
 
 /* items defined in the game */
 
-
-#define ITEM_HEAL_POTION 0
-#define ITEM_TORCH 1
-#define ITEM_APPLE 2
-
 static char *item_names[] = {
     "Potion of healing",
     "Potion of strength",
     "Potion of defense",
     "Potion of vision",
-    "Apple"
+    "Apple",
+    "Pickaxe",
+    "Ore"
 };
 #define ITEM_COUNT sizeof(item_names) / sizeof(char*)
 
+#define USAGE_CONSUMABLE 0xf0
+#define USAGE_WEAPON 0xf1
+#define USAGE_POTION 0xf2
+
+typedef struct _item {
+    char *name;
+    int quantity;
+    int dmg;
+    int hp;
+    int durability;
+    int usage;
+} item_t;
+
 typedef struct _inventory {
-    int inv[ITEM_COUNT];
+    item_t items[ITEM_COUNT];
     int equipped;
-    int size;
 } inventory_t;
 
 /* draws the inventory over the current frame */
 void inventory_draw(HANDLE con, inventory_t *inv);
-void inventory_calc_size(inventory_t *inv);
+int inventory_calc_size(inventory_t *inv);
+void inventory_init(inventory_t *inv, int quantities[]);
 
 #endif

@@ -66,13 +66,10 @@ void map_step(char map[ROWS][COLS]);
 void map_iter(char map[ROWS][COLS], int n);
 
 void map_add_exit(world_t *w);
-
 void map_add_coins(world_t *w);
-
 void map_add_enemies(world_t *w);
-
 void map_add_chest(world_t *w);
-
+void map_add_ore(world_t *w);
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y);
 
 #endif
