@@ -20,5 +20,7 @@ void break_wall(world_t *w, int dir);
 void fight_enemy(world_t *w);
 
 int player_attack(entity_t *player, entity_t *enemy);
+/* uses the currently equipped item */
+void player_use(entity_t *player);
 
 #endif

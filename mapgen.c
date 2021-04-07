@@ -98,6 +98,29 @@ void map_add_enemies(world_t *w) {
     }
 }
 
+void map_add_chest(world_t *w) {
+    int x = 0;
+    int y = 0;
+    do {
+        x = rand_int(0, COLS - 1);
+        y = rand_int(0, ROWS - 1);
+    } while (map_tile_neighbours(w->map, x, y) != 5);
+    w->map[y][x] = CHEST;
+}
+
+void map_add_ore(world_t *w) {
+    int x = 0;
+    int y = 0;
+    int count = rand_int(1, 10);
+    for (int i = 0; i < count; ++i) {
+        do {
+            x = rand_int(0, COLS - 1);
+            y = rand_int(0, ROWS - 1);
+        } while (map_tile_neighbours(w->map, x, y) != 8);
+        w->map[y][x] = ORE;
+    }
+}
+
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y) {
     int py = w->player->y;
     int px = w->player->x;

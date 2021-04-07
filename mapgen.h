@@ -14,16 +14,19 @@
 
 typedef struct _entity {
     int hp;
+    int max_hp;
+    
     int dmg;
+    int dmg_vary;
+    
     int coins;
     int armour;
-    int max_hp;
+    
     int escaped;
-    int dmg_vary;
     int defending;
     int x;
     int y;
-    //inventory_t *inv;
+    struct _inventory *inv;
 } entity_t;
 
 /*
@@ -63,11 +66,10 @@ void map_step(char map[ROWS][COLS]);
 void map_iter(char map[ROWS][COLS], int n);
 
 void map_add_exit(world_t *w);
-
 void map_add_coins(world_t *w);
-
 void map_add_enemies(world_t *w);
-
+void map_add_chest(world_t *w);
+void map_add_ore(world_t *w);
 void apply_fov(world_t *w, char map[ROWS][COLS], int fov_x, int fov_y);
 
 #endif
