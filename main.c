@@ -22,6 +22,7 @@
     - add ore interaction
     - finally add the town? o_o
     - fix battles so that they don't take over the entire screen
+    - add drops from enemies
 */
 
 
