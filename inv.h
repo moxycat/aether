@@ -33,7 +33,6 @@ typedef struct _item {
     int quantity;
     int dmg;
     int hp;
-    int durability;
     int usage;
 } item_t;
 
@@ -46,5 +45,9 @@ typedef struct _inventory {
 void inventory_draw(HANDLE con, inventory_t *inv);
 int inventory_calc_size(inventory_t *inv);
 void inventory_init(inventory_t *inv, int quantities[]);
+
+/*method for dropping items on victory*/
+void drops(HANDLE con, inventory_t *inv);
+
 
 #endif

@@ -22,7 +22,6 @@
     - add ore interaction
     - finally add the town? o_o
     - fix battles so that they don't take over the entire screen
-    - add drops from enemies
 */
 
 
@@ -87,6 +86,7 @@ int main(int argc, char **argv) {
     w->player->dmg = player_init_dmg;
     w->player->dmg_vary = player_init_dmg_vary;
     w->player->coins = 0;
+    w->player->armour = 0;
 
     cheat = 0;
 
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
             }
         }
         else if (w->status == STATUS_INFIGHT) {
-            battle(con, w->player);
+            battle(con, w->player, w->player->inv);
             if (w->player->hp <= 0) {
                 return - 1;
             }

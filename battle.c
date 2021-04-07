@@ -11,16 +11,18 @@ entity_t *make_enemy() {
 }
 
 int enemy_turn(HANDLE con, entity_t *player, entity_t *enemy){
-    int dmg_final = enemy->dmg + rand_int(0, enemy->dmg_vary);
+    int dmg_final = enemy->dmg + rand_int(0, enemy->dmg_vary) - player->armour;
     if(player->defending){
         dmg_final /= 2;
         player->defending = 0;
     }
+    if(player->armour > dmg_final)
+        dmg_final = 0;
     player->hp -= dmg_final;
     return dmg_final;
 }
 
-void victory(HANDLE con, entity_t *player, entity_t *enemy){
+void victory(HANDLE con, entity_t *player, entity_t *enemy, inventory_t *inv){
     DWORD written;
 	//mciSendStringA(concat("play sound\\", sounds[7]), NULL, 0, NULL);
 	//Sleep(2000);
@@ -28,7 +30,8 @@ void victory(HANDLE con, entity_t *player, entity_t *enemy){
 	//PlaySound(NULL, NULL, SND_ASYNC);
     player->coins += enemy->coins;
 	WriteConsoleA(con, "As the fiend falls, your courage stands tall. You've won the encounter.\n\n", 73, &written, NULL); //could list loot as well when implemented
-	//Sleep(1200);
+    drops(con, inv);
+    Sleep(2000);
 }
 
 void defeat(HANDLE con){
@@ -58,11 +61,15 @@ void player_turn(HANDLE con, entity_t *player, entity_t *enemy){
 
     switch(opt){
         case '1':
-            p_dmg = player_attack(player, enemy);
-            //mciSendStringA(concat("play sound\\", sounds[13]), NULL, 0, NULL);
-            sprintf(buffer, "You swing your weapon and hit the enemy for %d damage\n\n", p_dmg);
-            WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
-            //Sleep(1400);
+            if(rand_int(1, 7) == 1)
+                WriteConsoleA(con, "You swing your weapon and whoops! You missed!\n", 48, &written, NULL);
+            else{    
+                p_dmg = player_attack(player, enemy);
+                //mciSendStringA(concat("play sound\\", sounds[13]), NULL, 0, NULL);
+                sprintf(buffer, "You swing your weapon and hit the enemy for %d damage\n\n", p_dmg);
+                WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
+                //Sleep(1400);
+            }
             break;
 
         case '2':
@@ -94,7 +101,7 @@ void player_turn(HANDLE con, entity_t *player, entity_t *enemy){
 
 }
 
-void battle(HANDLE con, entity_t *player){
+void battle(HANDLE con, entity_t *player, inventory_t *inv){
     DWORD written;
     char buffer[CONSOLE_COLS];
     entity_t *enemy = make_enemy();
@@ -116,7 +123,7 @@ void battle(HANDLE con, entity_t *player){
         }
 
         if(enemy->hp <= 0){
-            victory(con, player, enemy);
+            victory(con, player, enemy, inv);
             return;
         }
 

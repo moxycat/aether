@@ -85,3 +85,24 @@ void inventory_init(inventory_t *inv, int quantities[]) {
     }
     inv->equipped = -1;
 }
+
+void drops(HANDLE con, inventory_t *inv){
+    DWORD written;
+    char buffer[CONSOLE_COLS];
+
+    int drop = rand() % 6;
+    int quan;
+
+    if(drop < 4){
+        inv->items[drop].quantity++;
+        sprintf(buffer, "The monster dropped a %s!\n", inv->items[drop].name);
+        WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
+    }
+
+    else if(drop == 4){
+        quan = rand_int(2, 4);
+        inv->items[6].quantity += quan;
+        sprintf(buffer, "The monster dropped a %d pieces of ore!\n", quan);
+        WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
+    }
+}
