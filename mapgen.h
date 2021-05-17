@@ -11,6 +11,7 @@
 #define STATUS_ROAM 0
 #define STATUS_INFIGHT 1
 #define STATUS_INMENU 2
+#define STATUS_INTOWN 3
 
 typedef struct _entity {
     int hp;
@@ -35,6 +36,7 @@ typedef struct _entity {
 */
 typedef struct _world {
     char map[ROWS][COLS];
+    char town[CONSOLE_ROWS][COLS];
     entity_t *player;
     int enemy_count;
     int depth;

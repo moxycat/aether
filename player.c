@@ -144,3 +144,92 @@ int player_attack(entity_t *player, entity_t *enemy){
     return dmg_final;    
 }
 
+void player_town_move_up(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    if (town_art[py - 1][px] == FLOOR) {
+        w->player->y--;
+    }
+}
+
+void player_town_move_down(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    if (town_art[py + 1][px] == FLOOR) {
+        w->player->y++;
+    }
+}
+
+void player_town_move_left(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    if (town_art[py][px - 1] == FLOOR) {
+        w->player->x--;
+    }
+}
+
+void player_town_move_right(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    if (town_art[py][px + 1] == FLOOR) {
+        w->player->x++;
+    }
+}
+
+int player_town_check_inn(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    for (int i = 0; i < 2; ++i) {
+        int inn_x = inn[i][0];
+        int inn_y = inn[i][1];
+        if ((px == inn_x) && (py == inn_y)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int player_town_check_cave(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    for (int i = 0; i < 2; ++i) {
+        int cave_x = cave[i][0];
+        int cave_y = cave[i][1];
+        if ((px == cave_x) && (py == cave_y)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int player_town_check_church(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    int church_x = church[0];
+    int church_y = church[1];
+    if ((px == church_x) && (py == church_y)) {
+        return 1;
+    }
+    return 0;
+}
+
+int player_town_check_blacksmith(world_t *w) {
+    int px = w->player->x;
+    int py = w->player->y;
+
+    for (int i = 0; i < 2; ++i) {
+        int blacksmith_x = blacksmith[i][0];
+        int blacksmith_y = blacksmith[i][1];
+        if ((px == blacksmith_x) && (py == blacksmith_y)) {
+            return 1;
+        }
+    }
+    return 0;
+}

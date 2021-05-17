@@ -24,6 +24,8 @@
     - fix battles so that they don't take over the entire screen
 */
 
+/* vladi you fker why'd you make the town an
+    array of strings and not an array of chars?!?!? */
 
 int enemies(int level) {
     return (level % rand_int(5, 10)) + rand_int(1, 5);
@@ -50,7 +52,8 @@ int main(int argc, char **argv) {
     SetConsoleActiveScreenBuffer(con);
     SetConsoleTitleA("Disciple of Gods");
     SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_MAXIMIZEBOX);
-    SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_THICKFRAME);
+    //SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_THICKFRAME);
+    SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_VSCROLL);
     console_set_size(800, 600);
     console_cursor_hide(con);
     srand(time(0)); /* 0 for testing only */
@@ -59,6 +62,7 @@ int main(int argc, char **argv) {
     int key = 0x0;
     int last_dir = 0x44;
     int last_status = STATUS_ROAM;
+    int choice = 0;
 
     /* add the main menu here */
     DWORD written;
@@ -91,7 +95,6 @@ int main(int argc, char **argv) {
     cheat = 0;
 
     inventory_init(w->player->inv, (int[]){0, 0, 0, 0, 5, 1, 0});
-
     make_map(w);
 
     draw(con, w);
@@ -103,40 +106,38 @@ int main(int argc, char **argv) {
         }
 
         if (w->status == STATUS_ROAM) {
+            draw(con, w);
+            key = getch();
             if (w->depth != current_level) {
-                display_dialogue_box(con, "Do you wish to return to town or proceed further down?\n", (char *[]){"Return to town", "Proceed further down"}, 2);
+                choice = display_dialogue_box(con, "Do you wish to return to town or proceed further down?\n", (char *[]){"Return to town", "Proceed further down"}, 2);
+                if (choice == 0)
+                    w->status = STATUS_INTOWN;
                 current_level++;
                 w->enemy_count = enemies(current_level);
                 make_map(w);
-                draw(con, w);
+                //draw(con, w);
             }
-            draw(con, w);
-            key = getch();
+
         
             if ((GetAsyncKeyState(0x57) & 0x8000) != 0) {
                 move_up(w);
-                //draw(con, w);
                 last_dir = 0x57;
             }
             else if ((GetAsyncKeyState(0x53) & 0x8000) != 0) {
                 move_down(w);
-                //draw(con, w);
                 last_dir = 0x53;
             }
             else if ((GetAsyncKeyState(0x41) & 0x8000) != 0) {
                 move_left(w);
-                //draw(con, w);
                 last_dir = 0x41;
             }
             else if ((GetAsyncKeyState(0x44) & 0x8000) != 0) {
                 move_right(w);
-                //draw(con, w);
                 last_dir = 0x44;
             }
             /* break wall */
             else if ((GetAsyncKeyState(0x51) & 0x8000) != 0) {
                 break_wall(w, last_dir);
-                //draw(con, w);
             }
             /* use */
             else if ((GetAsyncKeyState(0x45) & 0x8000) != 0) {
@@ -149,8 +150,7 @@ int main(int argc, char **argv) {
             /* cheat */
             if ((GetAsyncKeyState(VK_OEM_3) & 0x8000) != 0) {
                 cheat++;
-                cheat %= 3;
-                //draw(con, w);
+                cheat %= 2;
             }
         }
         else if (w->status == STATUS_INFIGHT) {
@@ -172,6 +172,47 @@ int main(int argc, char **argv) {
         else if (w->status == STATUS_INMENU) {
             inventory_draw(con, w->player->inv);
             w->status = STATUS_ROAM;
+        }
+        else if (w->status == STATUS_INTOWN) {
+            w->player->x = 5;
+            w->player->y = 12;
+
+            draw_town(con, w);
+            while (1) {
+                draw_town(con, w);
+                key = getch();
+                
+                if      ((GetAsyncKeyState(0x57) & 0x8000) != 0) player_town_move_up(w);
+                else if ((GetAsyncKeyState(0x53) & 0x8000) != 0) player_town_move_down(w);
+                else if ((GetAsyncKeyState(0x41) & 0x8000) != 0) player_town_move_left(w);
+                else if ((GetAsyncKeyState(0x44) & 0x8000) != 0) player_town_move_right(w);
+
+                if (player_town_check_cave(w)) {
+                    choice = display_dialogue_box(con, "Do you wish to return to the caves?\n", (char *[]){"Yes", "No"}, 2);
+                    if (choice == 0) break;
+                    else if (choice == 1) w->player->y--;
+                }
+
+                if (player_town_check_blacksmith(w)) {
+                    display_dialogue_box(con, "You entered the blacksmith.\n", (char *[]){"Continue..."}, 1);
+                    /* add here */
+                }
+
+                if (player_town_check_church(w)) {
+                    display_dialogue_box(con, "You entered the church.\n", (char *[]){"Continue..."}, 1);
+                    /* add here */
+                }
+
+                if (player_town_check_inn(w)) {
+                    display_dialogue_box(con, "You entered the inn.\n", (char *[]){"Continue..."}, 1);
+                    /* add here */
+                }
+
+                Sleep(50);
+                
+            }
+            w->status = STATUS_ROAM;
+
         }
         Sleep(50);
     }

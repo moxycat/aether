@@ -78,19 +78,30 @@ void draw(HANDLE con, world_t *w) {
     DWORD written;
     char status[COLS + 1];
     char *frame;
-    if (cheat > 0) sprintf(status, "HP: %d/%d | DMG: %d | COINS: %d | LVL: %d | ENEMIES: %d | POS: %d %d | EXIT: %d %d ",
-        w->player->hp, player_max_hp, w->player->dmg, w->player->coins, w->depth, w->enemy_count, w->player->x, w->player->y, w->exit_x, w->exit_y);
-    else sprintf(status, "HP: %d/%d | DMG: %d | COINS: %d | LVL: %d | ENEMIES: %d ", w->player->hp, player_max_hp, w->player->dmg, w->player->coins, w->depth, w->enemy_count);
+    //if (cheat == 2) sprintf(status, "HP: %d/%d | DMG: %d | COINS: %d | LVL: %d | ENEMIES: %d | POS: %d %d | EXIT: %d %d ",
+    //    w->player->hp, player_max_hp, w->player->dmg, w->player->coins, w->depth, w->enemy_count, w->player->x, w->player->y, w->exit_x, w->exit_y);
+    sprintf(status, "HP: %d/%d | DMG: %d | COINS: %d | LVL: %d | ENEMIES: %d ", w->player->hp, player_max_hp, w->player->dmg, w->player->coins, w->depth, w->enemy_count);
     for (int i = strlen(status); i < COLS + 1; ++i) {
         status[i] = '=';
     }
     status[COLS] = '\0';
-    if (cheat != 2) {
+    if (cheat == 0) {
         apply_fov(w, fov_map, 5, 3);
         frame = concat(status, fov_map);
     }
     else frame = concat(status, w->map);
-    WriteConsoleOutputCharacterA(con, frame, (ROWS + 1) * COLS, (COORD){0, 0}, &written);
+    WriteConsoleOutputCharacterA(con, frame, CONSOLE_ROWS * CONSOLE_COLS, (COORD){0, 0}, &written);
+}
+
+void draw_town(HANDLE con, world_t *w) {
+    DWORD written;
+    //WriteConsoleOutputCharacterA(con, frame, CONSOLE_ROWS * CONSOLE_COLS, (COORD){0, 0}, &written);
+    //SetConsoleCursorPosition(con, (COORD){0, 0});
+    //char buf[COLS];
+    //sprintf(buf, "X: %d Y: %d     ", w->player->x, w->player->y);
+    //WriteConsoleA(con, buf, strlen(buf), &written, NULL);
+    WriteConsoleOutputCharacterA(con, town_art, CONSOLE_ROWS * CONSOLE_COLS, (COORD){0, 0}, &written);
+    FillConsoleOutputCharacterA(con, PLAYER, 1, (COORD){w->player->x, w->player->y}, &written);
 }
 
 

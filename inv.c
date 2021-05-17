@@ -35,6 +35,9 @@ void inventory_draw(HANDLE con, inventory_t *inv) {
         }
         else skipped++;
     }
+
+    for (int i = 0; i < items; ++i)
+        FillConsoleOutputCharacterA(con, ' ', max_len, (COORD){0, items + i + 1}, &written);
     WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
 
     FillConsoleOutputCharacterA(con, '-', max_len, (COORD){0, items + 2}, &written);
