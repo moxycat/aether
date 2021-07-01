@@ -86,7 +86,8 @@ void draw(HANDLE con, world_t *w) {
     }
     status[COLS] = '\0';
     if (cheat == 0) {
-        apply_fov(w, fov_map, 5, 3);
+        //apply_fov(w, fov_map, 5, 3);
+        apply_fov(w, fov_map, 10, 5);
         frame = concat(status, fov_map);
     }
     else frame = concat(status, w->map);

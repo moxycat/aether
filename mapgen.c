@@ -1,6 +1,9 @@
 #include "mapgen.h"
+#include <Windows.h>
+#include <mmsystem.h>
 
 void map_init(char map[ROWS][COLS]) {
+
     for (int i = 0; i < ROWS; ++i) {
         for (int j = 0; j < COLS; ++j) {
             if (rand_int(1, 100) < INITIAL_PROBABILITY) {

@@ -27,6 +27,10 @@ typedef struct _entity {
     int defending;
     int x;
     int y;
+    
+    int weapon_lvl;
+    int armour_lvl;
+
     struct _inventory *inv;
 } entity_t;
 

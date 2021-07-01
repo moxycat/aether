@@ -1,4 +1,9 @@
+#include <Windows.h>
+#include <mmsystem.h>
+
 #include "battle.h"
+#include "audio.h"
+
 
 entity_t *make_enemy() {
     entity_t *e = (entity_t*)malloc(sizeof(entity_t));
@@ -24,22 +29,26 @@ int enemy_turn(HANDLE con, entity_t *player, entity_t *enemy){
 
 void victory(HANDLE con, entity_t *player, entity_t *enemy, inventory_t *inv){
     DWORD written;
-	//mciSendStringA(concat("play sound\\", sounds[7]), NULL, 0, NULL);
+	mciSendStringA("play sound\\zombied.wav", NULL, 0, NULL);
+    Sleep(2000);
+    //totalwar - keyword to continue where i left off from
+    
+    //mciSendStringA(concat("play sound\\", sounds[7]), NULL, 0, NULL);
 	//Sleep(2000);
 	//mciSendStringA(concat("play sound\\", sounds[3]), NULL, 0, NULL);
 	//PlaySound(NULL, NULL, SND_ASYNC);
     player->coins += enemy->coins;
-	WriteConsoleA(con, "As the fiend falls, your courage stands tall. You've won the encounter.\n\n", 73, &written, NULL); //could list loot as well when implemented
+	WriteConsoleA(con, "As the fiend falls, you stand stalwart. You've won the encounter!\n\n", 67, &written, NULL); //could list loot as well when implemented
     drops(con, inv);
-    Sleep(2000);
+    Sleep(6000);
 }
 
 void defeat(HANDLE con){
     DWORD written;
 	//mciSendStringA(concat("play sound\\", sounds[0]), NULL, 0, NULL);
 	//PlaySound(NULL, NULL, SND_ASYNC);
-	WriteConsoleA(con, "Before you even get to reflect on your life, you are struck down viciously by your enemy. Humanity is now doomed to fall...\n\n", 125, &written, NULL);
-	Sleep(3000);
+	WriteConsoleA(con, "Before you even get to reflect on your life, you are struck down viciously by your enemy. The townsfolk shall weave tales of your bravery...\n\n", 142, &written, NULL);
+	Sleep(6000);
 }
 
 void player_turn(HANDLE con, entity_t *player, entity_t *enemy){
@@ -50,23 +59,23 @@ void player_turn(HANDLE con, entity_t *player, entity_t *enemy){
     player->escaped = 0;
     int p_dmg;
 
-    sprintf(buffer, "Player: HP: %d/%d ATK: %d - %d\tEnemy: HP: %d/%d ATK: %d - %d \n", player->hp, player_max_hp, player->dmg, player->dmg + player->dmg_vary, enemy->hp, enemy->max_hp, enemy->dmg, enemy->dmg + enemy->dmg_vary);
+    sprintf(buffer, "\nPlayer: HP: %d/%d ATK: %d-%d\tEnemy: HP: %d/%d ATK: %d-%d\n", player->hp, player_max_hp, player->dmg, player->dmg + player->dmg_vary, enemy->hp, enemy->max_hp, enemy->dmg, enemy->dmg + enemy->dmg_vary);
     WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
     WriteConsoleA(con, "1.Attack\n2.Defend\n3.Run\n4.Item\n", 31, &written, NULL);
 
     do {
         opt = getch();
-        if (opt < '1' || opt > '4') WriteConsoleA(con, "That is not a valid action.\n\n", 29, &written, NULL);
+        if (opt < '1' || opt > '4') WriteConsoleA(con, "That is not a valid action.\n", 29, &written, NULL);
     } while (opt < '1' || opt > '4');
 
     switch(opt){
         case '1':
             if(rand_int(1, 7) == 1)
-                WriteConsoleA(con, "You swing your weapon and whoops! You missed!\n", 48, &written, NULL);
+                WriteConsoleA(con, "You swing your weapon at the enemy, but they dodged out of the way quickly...\n", 78, &written, NULL);
             else{    
                 p_dmg = player_attack(player, enemy);
                 //mciSendStringA(concat("play sound\\", sounds[13]), NULL, 0, NULL);
-                sprintf(buffer, "You swing your weapon and hit the enemy for %d damage\n\n", p_dmg);
+                sprintf(buffer, "You swing your weapon and dealt %d damage to the enemy.\n", p_dmg);
                 WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
                 //Sleep(1400);
             }
@@ -75,28 +84,30 @@ void player_turn(HANDLE con, entity_t *player, entity_t *enemy){
         case '2':
             //mciSendStringA(concat("play sound\\", sounds[10]), NULL, 0, NULL);
             player->defending = 1;
-            WriteConsoleA(con, "You take a defensive stance, expecting your enemy's vicious attack, bolstering your defense for the next turn.\n\n", 112, &written, NULL);
+            WriteConsoleA(con, "You take a defensive stance, expecting the assaults of your adversary,\nbolstering your defense for the next turn.\n", 115, &written, NULL);
             break;
 
         case '3':
             //mciSendStringA(concat("play sound\\", sounds[11]), NULL, 0, NULL);
-		    WriteConsoleA(con, "You have decided your chances of winning have faltered, and cowardly sprint away from your adversaries...\n\n", 107, &written, NULL);
+		    WriteConsoleA(con, "You have decided your chances of winning have faltered,\nand cowardly sprint away from your adversaries...\n", 107, &written, NULL);
             if(rand() % 2 == 0){
-				//Sleep(3000);
+				Sleep(4000);
 			}
 			else{
-				WriteConsoleA(con, "...but even that you do sloppily. The enemy could hit you one last time...\n", 75, &written, NULL);
-				Sleep(3000);
+				WriteConsoleA(con, "\n...but even that you do sloppily. The enemy could hit you one last time...\n", 76, &written, NULL);
+
 				//mciSendStringA(concat("play sound\\", sounds[6]), NULL, 0, NULL);
-	            sprintf(buffer, "The enemy has hit you for %d damage.\n", enemy_turn(con, player, enemy));
+	            sprintf(buffer, "The enemy dealt %d damage to you.\n", enemy_turn(con, player, enemy));
                 WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
+                Sleep(6000);
 	            //Sleep(1400);
-				}
+			}
 			player->escaped = 1;	
 			break;
         
         case '4':
-        WriteConsoleA(con, "...", 3, &written, NULL);
+            WriteConsoleA(con, "...\n", 4, &written, NULL);
+            break;
     }
 
 }
@@ -107,7 +118,7 @@ void battle(HANDLE con, entity_t *player, inventory_t *inv){
     entity_t *enemy = make_enemy();
     player->defending = 0;
     int m_dmg;
-    WriteConsoleA(con, "You're under attack!\n\n", 22, &written, NULL);
+    WriteConsoleA(con, "Curses - you're under attack!\n", 31, &written, NULL);
 
     while(1){
         player_turn(con, player, enemy);
@@ -130,7 +141,7 @@ void battle(HANDLE con, entity_t *player, inventory_t *inv){
 
         m_dmg = enemy_turn(con, player, enemy);
         //mciSendStringA(concat("play sound\\", sounds[6]), NULL, 0, NULL);
-	    sprintf(buffer, "The enemy has hit you for %d damage.\n", m_dmg);
+	    sprintf(buffer, "The enemy dealt %d damage to you.\n", m_dmg);
         WriteConsoleA(con, buffer, strlen(buffer), &written, NULL);
 	    //Sleep(1400);
 

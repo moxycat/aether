@@ -4,6 +4,7 @@
 #include <time.h>
 #include <conio.h>
 #include <Windows.h>
+#include <MMSystem.h>
 
 #include "mapgen.h"
 #include "player.h"
@@ -12,6 +13,9 @@
 #include "util.h"
 #include "inv.h"
 #include "graphics.h"
+#include "audio.h"
+#include "smithy.h"
+#include "inn.h"
 
 /*
     TODO:
@@ -26,6 +30,7 @@
 
 /* vladi you fker why'd you make the town an
     array of strings and not an array of chars?!?!? */
+/*make your mum :sunglasses:*/    
 
 int enemies(int level) {
     return (level % rand_int(5, 10)) + rand_int(1, 5);
@@ -50,7 +55,7 @@ int main(int argc, char **argv) {
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
         CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(con);
-    SetConsoleTitleA("Disciple of Gods");
+    SetConsoleTitleA("Scourge");
     SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_MAXIMIZEBOX);
     //SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_THICKFRAME);
     SetWindowLongA(GetConsoleWindow(), GWL_STYLE, GetWindowLongA(GetConsoleWindow(), GWL_STYLE) & ~WS_VSCROLL);
@@ -66,10 +71,12 @@ int main(int argc, char **argv) {
 
     /* add the main menu here */
     DWORD written;
-    for (int i = 0; i < 26; ++i) {
+    for (int i = 0; i < 35; ++i) {
         WriteConsoleA(con, main_menu_text[i], strlen(main_menu_text[i]), &written, NULL);
     }
     int proceed = 0;
+    PlaySound(NULL, NULL, SND_ASYNC);
+    PlaySoundA((LPCSTR) "music\\menu.wav", NULL, SND_FILENAME | SND_ASYNC);
     do {
         key = getch();
         switch (key) {
@@ -91,11 +98,17 @@ int main(int argc, char **argv) {
     w->player->dmg_vary = player_init_dmg_vary;
     w->player->coins = 0;
     w->player->armour = 0;
+    w->player->armour_lvl = 0;
+    w->player->weapon_lvl = 0;
 
     cheat = 0;
 
+    int x1 = 0, y1 = 0; /* saves the coordinates to where the player should be spawned in the cave */
+
     inventory_init(w->player->inv, (int[]){0, 0, 0, 0, 5, 1, 0});
     make_map(w);
+    PlaySound(NULL, NULL, SND_ASYNC);
+    PlaySoundA((LPCSTR) "music\\depths.wav", NULL, SND_FILENAME | SND_ASYNC); //workaround?
 
     draw(con, w);
     while (1) {
@@ -105,16 +118,22 @@ int main(int argc, char **argv) {
             last_status = w->status;
         }
 
+        
+
         if (w->status == STATUS_ROAM) {
+         
             draw(con, w);
             key = getch();
             if (w->depth != current_level) {
-                choice = display_dialogue_box(con, "Do you wish to return to town or proceed further down?\n", (char *[]){"Return to town", "Proceed further down"}, 2);
+                choice = display_dialogue_box(con, "Do you wish to return to Altgard or proceed further down?\n", (char *[]){"Return to Altgard", "Proceed further down..."}, 2);
                 if (choice == 0)
                     w->status = STATUS_INTOWN;
                 current_level++;
                 w->enemy_count = enemies(current_level);
                 make_map(w);
+                x1 = w->player->x;
+                y1 = w->player->y;
+                
                 //draw(con, w);
             }
 
@@ -152,8 +171,12 @@ int main(int argc, char **argv) {
                 cheat++;
                 cheat %= 2;
             }
+
+            
         }
         else if (w->status == STATUS_INFIGHT) {
+            PlaySound(NULL, NULL, SND_ASYNC);
+            PlaySoundA((LPCSTR) "music\\battle.wav", NULL, SND_FILENAME | SND_ASYNC);
             battle(con, w->player, w->player->inv);
             if (w->player->hp <= 0) {
                 return - 1;
@@ -168,15 +191,19 @@ int main(int argc, char **argv) {
             }
             w->enemy_count--;
             w->status = STATUS_ROAM;
+            PlaySound(NULL, NULL, SND_ASYNC);
+            PlaySoundA((LPCSTR) "music\\depths.wav", NULL, SND_FILENAME | SND_ASYNC); //workaround?
         }
         else if (w->status == STATUS_INMENU) {
+            mciSendStringA("play sound\\journal.wav", NULL, 0, NULL);
             inventory_draw(con, w->player->inv);
             w->status = STATUS_ROAM;
         }
         else if (w->status == STATUS_INTOWN) {
             w->player->x = 5;
             w->player->y = 12;
-
+            PlaySound(NULL, NULL, SND_ASYNC);
+            PlaySoundA((LPCSTR) "music\\town.wav", NULL, SND_FILENAME | SND_ASYNC);
             draw_town(con, w);
             while (1) {
                 draw_town(con, w);
@@ -188,30 +215,38 @@ int main(int argc, char **argv) {
                 else if ((GetAsyncKeyState(0x44) & 0x8000) != 0) player_town_move_right(w);
 
                 if (player_town_check_cave(w)) {
-                    choice = display_dialogue_box(con, "Do you wish to return to the caves?\n", (char *[]){"Yes", "No"}, 2);
+                    choice = display_dialogue_box(con, "Start another expedition and delve down?\n", (char *[]){"Yes", "No"}, 2);
                     if (choice == 0) break;
                     else if (choice == 1) w->player->y--;
                 }
 
                 if (player_town_check_blacksmith(w)) {
                     display_dialogue_box(con, "You entered the blacksmith.\n", (char *[]){"Continue..."}, 1);
-                    /* add here */
+                    smithy(con, w->player, w->player->inv);
+                    w->player->x = blacksmith_exit[0];
+                    w->player->y = blacksmith_exit[1];
                 }
 
                 if (player_town_check_church(w)) {
                     display_dialogue_box(con, "You entered the church.\n", (char *[]){"Continue..."}, 1);
-                    /* add here */
+                    
                 }
 
                 if (player_town_check_inn(w)) {
                     display_dialogue_box(con, "You entered the inn.\n", (char *[]){"Continue..."}, 1);
-                    /* add here */
+                    inn_house(con, w);
+                    w->player->x = inn_exit[0];
+                    w->player->y = inn_exit[1];
                 }
 
                 Sleep(50);
                 
             }
+            w->player->x = x1;
+            w->player->y = y1;
             w->status = STATUS_ROAM;
+            PlaySound(NULL, NULL, SND_ASYNC);
+            PlaySoundA((LPCSTR) "music\\depths.wav", NULL, SND_FILENAME | SND_ASYNC); //workaround?
 
         }
         Sleep(50);
