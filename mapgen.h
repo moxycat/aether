@@ -14,6 +14,9 @@
 #define STATUS_INTOWN 3
 
 typedef struct _entity {
+    int armour_lvl;
+    int weapon_lvl;
+
     int hp;
     int max_hp;
     
