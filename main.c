@@ -90,9 +90,7 @@ int main(int argc, char **argv) {
     w->player->dmg = player_init_dmg;
     w->player->dmg_vary = player_init_dmg_vary;
     w->player->coins = 0;
-    w->player->armour = 2;
-    w->player->armour_lvl = 1;
-    w->player->weapon_lvl = 1;
+    w->player->armour = 0;
 
     cheat = 0;
 
@@ -156,7 +154,7 @@ int main(int argc, char **argv) {
             }
         }
         else if (w->status == STATUS_INFIGHT) {
-            battle(con, w->player, w->player->inv, choice);
+            battle(con, w->player, w->player->inv);
             if (w->player->hp <= 0) {
                 return - 1;
             }
@@ -176,7 +174,6 @@ int main(int argc, char **argv) {
             w->status = STATUS_ROAM;
         }
         else if (w->status == STATUS_INTOWN) {
-            w->player->hp = player_max_hp;
             w->player->x = 5;
             w->player->y = 12;
 
@@ -198,7 +195,7 @@ int main(int argc, char **argv) {
 
                 if (player_town_check_blacksmith(w)) {
                     display_dialogue_box(con, "You entered the blacksmith.\n", (char *[]){"Continue..."}, 1);
-                    smithy(con, w->player, w->player->inv);
+                    /* add here */
                 }
 
                 if (player_town_check_church(w)) {
