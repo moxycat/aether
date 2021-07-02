@@ -7,7 +7,8 @@ static char* music[4] = {
 
 static char* sound[35] = {
     "basicattack.wav", "battlestart.wav", "bolster.wav", "journal.wav", "loot.wav", "miss.wav",
-    "playerd.wav", "run.wav", "zombieatt.wav", "zombied.wav"
+    "playerd.wav", "run.wav", "zombieatt.wav", "zombied.wav", "win.wav", "shatter.wav",
+    "dooropen.wav", "guard.wav", "gold.wav", "lghit.wav", "repair.wav", "doorclos.wav"
 };
 
 #endif

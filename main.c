@@ -157,6 +157,7 @@ int main(int argc, char **argv) {
             /* break wall */
             else if ((GetAsyncKeyState(0x51) & 0x8000) != 0) {
                 break_wall(w, last_dir);
+                mciSendStringA("play sound\\shatter.wav", NULL, 0, NULL);
             }
             /* use */
             else if ((GetAsyncKeyState(0x45) & 0x8000) != 0) {

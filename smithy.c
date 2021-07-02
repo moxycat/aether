@@ -1,5 +1,8 @@
 #include "smithy.h"
 
+#include <Windows.h>
+#include <mmsystem.h>
+
 void upgrade_menu(HANDLE con, entity_t *player, inventory_t *inv, int choice){
     char buffer[CONSOLE_COLS];
     char buffer1[CONSOLE_COLS];
@@ -11,10 +14,10 @@ void upgrade_menu(HANDLE con, entity_t *player, inventory_t *inv, int choice){
     sprintf(buffer, "Upgrade armour (DEF: %d -> %d) for %d ores and %d gold coins", player->armour, (int)(player->armour * 1.2 + 2), arm_p_o, arm_p_g);
     sprintf(buffer1, "Upgrade weapon (BASE ATK: %d -> %d) for %d ores, %d gold coins", player->dmg, (int)(player->dmg * 1.2 + 3), weap_p_o, weap_p_g);
 
-    choice = display_dialogue_box(con, "I can upgrade your weapons and armour so you can fight off the enemies that plague the cave nearby\n", (char *[]){buffer, buffer1, "Leave"}, 2);
+    choice = display_dialogue_box(con, "So - what will it be? A sharp blade or a hard plate?\n", (char *[]){buffer, buffer1, "Leave"}, 2);
     if(choice == 0) {
         if(player->inv->items[6].quantity < arm_p_o || player->coins < arm_p_g){
-            choice = display_dialogue_box(con, "Unfortunately, you don't have enough recources. Go back and fight some more in the cave to gather more.\n", (char *[]){"Go Back", "Leave"}, 2);
+            choice = display_dialogue_box(con, "You know blacksmiths need metal t' work with. Come back once you have some and I'll gladly help.\n", (char *[]){"Go Back", "Leave"}, 2);
             if(choice == 0) upgrade_menu(con, player, inv, choice);
             else return;
         }
@@ -22,7 +25,7 @@ void upgrade_menu(HANDLE con, entity_t *player, inventory_t *inv, int choice){
     }
     else if(choice == 1) {
         if(player->inv->items[6].quantity < weap_p_o || player->coins < arm_p_g){
-            choice = display_dialogue_box(con, "Unfortunately, you don't have enough recources. Go back and fight some more in the cave to gather more.\n", (char *[]){"Go Back", "Leave"}, 2);
+            choice = display_dialogue_box(con, "You know blacksmiths need metal t' work with. Come back once you have some and I'll gladly help.\n", (char *[]){"Go Back", "Leave"}, 2);
             if(choice == 0) upgrade_menu(con, player, inv, choice);
             else return;
         }
@@ -36,7 +39,8 @@ void upgrade_weapon(HANDLE con, entity_t *player, inventory_t *inv, int choice){
     player->weapon_lvl++;
     player->dmg += (int)(0.4 * player->dmg);
     player->dmg_vary++;
-    choice = display_dialogue_box(con, "Congratulations, your weapon has been improved! You should now be able to fight the stronger monsters in the cave!\n", (char *[]){"Go Back", "Leave"}, 2);
+    mciSendStringA("play sound\\repair.wav", NULL, 0, NULL);
+    choice = display_dialogue_box(con, "There ya go..all sharpened and ready to cleave!\n", (char *[]){"Go Back", "Leave"}, 2);
     if(choice == 0) upgrade_menu(con, player, inv, choice);
     else return;
 }
@@ -46,13 +50,14 @@ void upgrade_armour(HANDLE con, entity_t *player, inventory_t *inv, int choice){
     player->coins -= 10 + 2.5 * player->armour_lvl;
     player->armour_lvl++;
     player->armour += (int)(0.5 * player->armour);
-    choice = display_dialogue_box(con, "Congratulations, your armour has been improved! You should now be able to fight the stronger monsters in the cave!\n", (char *[]){"Go Back", "Leave"}, 2);
+    mciSendStringA("play sound\\repair.wav", NULL, 0, NULL);
+    choice = display_dialogue_box(con, "There we go - the sturdiest in town, and it'll only get better!\n", (char *[]){"Go Back", "Leave"}, 2);
     if(choice == 0) upgrade_menu(con, player, inv, choice);
     else return;
 }
 
 void smithy(HANDLE con, entity_t *player, inventory_t *inv){
-    int choice = display_dialogue_box(con, "Welcome to my smithy, adventurer, I hope I can help you.\n", (char *[]) {"Continue...", "Leave"}, 2);
+    int choice = display_dialogue_box(con, "Welcome to my smithy, traveller, I hope I can be of service to ya.\n", (char *[]) {"Continue...", "Leave"}, 2);
     if(choice == 0) upgrade_menu(con, player, inv, choice);
     else return;
 }
